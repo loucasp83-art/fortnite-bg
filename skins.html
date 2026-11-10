@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Galerie des skins - FORTNITE BG</title>
+		<link rel="stylesheet" href="./style.css" />
+
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				background: #101525;
+				color: white;
+				font-family: Arial, sans-serif;
+			}
+
+			.hero {
+				padding: 55px 15px;
+				text-align: center;
+				background: linear-gradient(135deg, #164b91, #702bb0);
+				border-radius: 18px;
+				margin-bottom: 30px;
+			}
+
+			.hero h2 {
+				font-size: 35px;
+				margin: 15px 0;
+			}
+
+			.gallery {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+				gap: 18px;
+			}
+
+			.skin {
+				background: #1c2943;
+				border: 1px solid #344b70;
+				border-radius: 15px;
+				overflow: hidden;
+				text-align: center;
+				padding-bottom: 18px;
+				transition: transform 0.2s;
+			}
+
+			.skin:hover {
+				transform: translateY(-5px);
+			}
+
+			.skin img {
+				width: 100%;
+				height: 220px;
+				object-fit: contain;
+				background: linear-gradient(145deg, #164b91, #702bb0);
+				display: block;
+			}
+
+			.skin h3 {
+				color: #00d9ff;
+				margin: 15px 5px 8px;
+			}
+
+			.skin p {
+				color: #c6d4eb;
+				font-size: 13px;
+				padding: 0 8px;
+			}
+
+			.rarity {
+				display: inline-block;
+				color: #00d9ff;
+				font-size: 11px;
+				font-weight: bold;
+				margin-top: 10px;
+				letter-spacing: 1px;
+			}
+
+			.status {
+				text-align: center;
+				color: #00d9ff;
+				padding: 20px;
+				grid-column: 1 / -1;
+			}
+
+			.back {
+				display: block;
+				text-align: center;
+				margin: 35px 0;
+				color: #00d9ff;
+				text-decoration: none;
+				font-weight: bold;
+			}
+
+			@media (max-width: 400px) {
+				.gallery {
+					grid-template-columns: repeat(2, minmax(0, 1fr));
+					gap: 12px;
+				}
+
+				.skin img {
+					height: 180px;
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+		<header>
+			<h1>FORTNITE BG</h1>
+			<nav>
+				<a href="index.html">Accueil</a>
+				<a href="skins.html">Skins</a>
+				<a href="actualites.html">Actualités</a>
+				<a href="quiz.html">Quiz</a>
+				<a href="carte.html">Carte</a>
+			</nav>
+		</header>
+
+		<main>
+			<section class="hero">
+				<p>COLLECTION OFFICIELLE DES PERSONNAGES</p>
+				<h2>GALERIE DES SKINS</h2>
+				<p>Découvre les personnages emblématiques de Fortnite !</p>
+			</section>
+
+			<section class="gallery" id="gallery">
+				<p class="status">Chargement des skins...</p>
+			</section>
+
+			<a class="back" href="index.html">← RETOUR À L'ACCUEIL</a>
+		</main>
+
+		<footer>
+			FORTNITE BG • Fan site non officiel • Fortnite appartient à Epic
+			Games.
+		</footer>
+
+		<script>
+			alert("JAVASCRIPT FONCTIONNE !");
+			const skins = [
+				{
+					name: "Peely",
+					description: "La célèbre banane de Fortnite.",
+				},
+				{
+					name: "Fishstick",
+					description: "Le poisson le plus célèbre du jeu.",
+				},
+				{ name: "Midas", description: "Le roi de l'or." },
+				{ name: "Drift", description: "Un personnage emblématique." },
+				{ name: "Lynx", description: "Une combattante mystérieuse." },
+				{
+					name: "Jonesy",
+					description: "Un personnage incontournable.",
+				},
+			];
+
+			const gallery = document.getElementById("gallery");
+
+			async function loadSkin(skin) {
+				try {
+					const url = new URL(
+						"https://fortnite-api.com/v2/cosmetics/br/search/all"
+					);
+
+					url.searchParams.set("name", skin.name);
+					url.searchParams.set("matchMethod", "full");
+					url.searchParams.set("type", "outfit");
+					url.searchParams.set("language", "en");
+
+					const controller = new AbortController();
+					const timeout = setTimeout(() => controller.abort(), 12000);
+
+					try {
+						const response = await fetch(url, {
+							signal: controller.signal,
+						});
+
+						if (!response.ok)
+							throw new Error("Erreur " + response.status);
+
+						const result = await response.json();
+						const items = Array.isArray(result.data)
+							? result.data
+							: [result.data];
+
+						const cosmetic = items.find(
+							(item) => item && item.images && item.images.icon
+						);
+
+						if (!cosmetic) throw new Error("Skin introuvable");
+
+						const card = document.createElement("article");
+						card.className = "skin";
+
+						const img = document.createElement("img");
+						img.src = cosmetic.images.icon;
+						img.alt = skin.name;
+						img.loading = "lazy";
+
+						const rarity = document.createElement("span");
+						rarity.className = "rarity";
+						rarity.textContent =
+							cosmetic.rarity?.displayValue || "INCONNUE";
+
+						const title = document.createElement("h3");
+						title.textContent = cosmetic.name;
+
+						const description = document.createElement("p");
+						description.textContent = skin.description;
+
+						card.append(img, rarity, title, description);
+						gallery.appendChild(card);
+					} finally {
+						clearTimeout(timeout);
+					}
+				} catch (error) {
+					console.error(skin.name, error);
+
+					const message = document.createElement("p");
+					message.className = "status";
+					message.textContent = skin.name + " : image indisponible.";
+
+					gallery.appendChild(message);
+				}
+			}
+
+			async function loadSkins() {
+				gallery.innerHTML = "";
+
+				await Promise.all(skins.map(loadSkin));
+			}
+
+			loadSkins();
+		</script>
+	</body>
+</html>
